@@ -1,5 +1,6 @@
 using BTrees.Lib;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Drawing;
 
 namespace BTrees.Test
 {
@@ -23,11 +24,11 @@ namespace BTrees.Test
 			Assert.AreEqual(order, btree.Order);
 		}
 
-		[TestMethod]
-		public void TestValuesInserted()
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSets), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestValuesInserted(IEnumerable<(int Key, int Value)> entries)
 		{
-			var entries = GetInsertionTestData();
-			var btree = CreateTree(entries);
+			var btree = TestDataHelpers.CreateTreeWithData(entries);
 
 			foreach (var (Key, Value) in entries)
 			{
@@ -36,25 +37,6 @@ namespace BTrees.Test
 				Assert.IsNotNull(retrieved);
 				Assert.AreEqual(Value, retrieved);
 			}
-		}
-
-		public static IEnumerable<(int Key, int Value)> GetInsertionTestData(int size = 10)
-		{
-			for (int i = 0; i < size; i++)
-			{
-				yield return (i, i + 10);
-			}
-		}
-
-		public static BTree CreateTree(IEnumerable<(int Key, int Value)> entries, int order = BTree.DEFAULT_ORDER)
-		{
-			var btree = new BTree(order);
-			foreach (var (Key, Value) in entries)
-			{
-				btree.Insert(Key, Value);
-			}
-
-			return btree;
 		}
 
 		[TestMethod]
@@ -66,14 +48,16 @@ namespace BTrees.Test
 			Assert.IsNull(retrieved);
 		}
 
-		[TestMethod]
-		public void TestInsertedElementsWereDeleted()
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSets), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestInsertedElementsWereDeleted(IEnumerable<(int Key, int Value)> entries)
 		{
-			var entries = GetInsertionTestData();
-			var btree = CreateTree(entries);
+			var btree = new BTree();
 
-			foreach (var (Key, _) in entries)
+			foreach (var (Key, Value) in entries)
 			{
+				btree.Insert(Key, Value);
+
 				btree.Delete(Key);
 
 				var retrieved = btree.Find(Key);
@@ -81,17 +65,17 @@ namespace BTrees.Test
 			}
 		}
 
-		[TestMethod]
-		public void TestOnlyDeletedEntryWasDeleted()
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSets), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestOnlyDeletedEntryWasDeleted(IEnumerable<(int Key, int Value)> entries)
 		{
-			var entries = GetInsertionTestData().ToList();
-			var btree = CreateTree(entries);
+			var btree = TestDataHelpers.CreateTreeWithData(entries);
 
 			var first = entries.First();
 			btree.Delete(first.Key);
 
-			var numEntries = TraverseEntries(btree).Count();
-			Assert.AreEqual(entries.Count - 1, numEntries);
+			var numEntries = TestDataHelpers.TraverseEntries(btree).Count();
+			Assert.AreEqual(entries.Count() - 1, numEntries);
 		}
 
 		[TestMethod]
@@ -116,12 +100,12 @@ namespace BTrees.Test
 		}
 
 		// Knuth's definition part 1 - Every node has at most m children
-		[TestMethod]
-		public void TestNumberOfChildrenDoesNotExceedOrder()
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSets), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestNumberOfChildrenDoesNotExceedOrder(IEnumerable<(int Key, int Value)> entries)
 		{
 			var order = 5;
-			var entries = GetInsertionTestData();
-			var btree = CreateTree(entries, order);
+			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
 
 			var nodes = btree.Traverse();
 			foreach (var node in nodes)
@@ -130,17 +114,17 @@ namespace BTrees.Test
 			}
 		}
 
-		[TestMethod]
-		public void TestTraversedNodesContainAllEntries()
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSets), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestTraversedNodesContainAllEntries(IEnumerable<(int Key, int Value)> entries)
 		{
 			var order = 5;
-			var entries = GetInsertionTestData();
-			var btree = CreateTree(entries, order);
+			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
 
-			var expectedVisitCount = GetVisitCount(entries);
+			var expectedVisitCount = TestDataHelpers.GetVisitCount(entries);
 
-			var addedEntries = TraverseEntries(btree);
-			var actualVisitCount = GetVisitCount(addedEntries);
+			var addedEntries = TestDataHelpers.TraverseEntries(btree);
+			var actualVisitCount = TestDataHelpers.GetVisitCount(addedEntries);
 
 			foreach (var countEntry in expectedVisitCount)
 			{
@@ -149,39 +133,32 @@ namespace BTrees.Test
 			}
 		}
 
-		private static Dictionary<(int, int), int> GetVisitCount(IEnumerable<(int, int)> entries)
-		{
-			var visitCount = new Dictionary<(int, int), int>();
-			foreach (var entry in entries)
-			{
-				if (!visitCount.ContainsKey(entry))
-				{
-					visitCount.Add((entry), 0);
-				}
-				visitCount[entry]++;
-			}
-
-			return visitCount;
-		}
-
-		private static IEnumerable<(int, int)> TraverseEntries(BTree btree)
-		{
-			return btree.Traverse().SelectMany(node => node.Entries);
-		}
-
 		// Knuth's definition part 3 - The root node has at least two children unless it is a leaf
 		//
 		// case: leaf
-		[TestMethod]
-		public void TestAllEntriesInRootWhenFewerThanOrder()
+		[DataTestMethod]
+		[DynamicData(nameof(GetData_TestAllEntriesInRootWhenFewerThanOrder), DynamicDataSourceType.Method)]
+		public void TestAllEntriesInRootWhenFewerThanOrder(int order, IEnumerable<(int Key, int Value)> entries)
 		{
-			var order = 5;
-			var btree = CreateTree(GetInsertionTestData(order - 1), order);
+			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
 
 			var root = btree.GetRoot();
 			var isLeaf = root.Count == 0;
 
 			Assert.IsTrue(isLeaf);
+		}
+
+		public static IEnumerable<object[]> GetData_TestAllEntriesInRootWhenFewerThanOrder()
+		{
+			var order = 5;
+			var size = order - 1;
+			var ascending = TestDataHelpers.GetAscendingTestData(size);
+			var descending = TestDataHelpers.GetDescendingTestData(size);
+			var randomized = TestDataHelpers.GetRandomTestData(size);
+
+			yield return new object[] { order, ascending };
+			yield return new object[] { order, descending };
+			yield return new object[] { order, randomized };
 		}
 
 		// Knuth's definition part 2 - Every node, except for the root and the leaves, has at least ceil(m/2) children

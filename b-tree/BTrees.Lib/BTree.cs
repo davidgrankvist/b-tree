@@ -98,6 +98,7 @@ namespace BTrees.Lib
 					{
 						prev.Next = current.Next;
 					}
+					break;
 				}
 
 				prev = current;
