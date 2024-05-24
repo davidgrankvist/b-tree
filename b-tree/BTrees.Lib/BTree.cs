@@ -145,7 +145,8 @@ namespace BTrees.Lib
 
 			public void Insert(int key, int val)
 			{
-				entries.Add((key, val));
+				var iAdd = entries.FindLastIndex((x) => key > x.Key);
+				entries.Insert(iAdd + 1, (key, val));
 			}
 
 			public void Remove(int key)

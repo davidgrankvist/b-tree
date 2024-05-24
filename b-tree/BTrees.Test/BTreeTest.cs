@@ -157,6 +157,41 @@ namespace BTrees.Test
 			return dataSets.Select(ds => new object[] { order, ds[0] });
 		}
 
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSets), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestNodeEntriesAreSortedAsc(IEnumerable<(int Key, int Value)> entries)
+		{
+			var btree = TestDataHelpers.CreateTreeWithData(entries);
+
+			foreach (var node in btree.Traverse())
+			{
+				Assert.IsTrue(node.Entries.IsSortedAsc());
+			}
+		}
+
+		// Knuth's definition part 3 - The root node has at least two children unless it is a leaf
+		//
+		// case: not a leaf
+		//[DataTestMethod]
+		//[DynamicData(nameof(GetData_TestRootHasAtLeastTwoChildrenWhenNumberOfEntriesExceedsOrder), DynamicDataSourceType.Method)]
+		//public void TestRootHasAtLeastTwoChildrenWhenNumberOfEntriesExceedsOrder(int order, IEnumerable<(int Key, int Value)> entries)
+		//{
+		//	var btree = TestDataHelpers.CreateTreeWithData(entries, order);
+
+		//	var root = btree.GetRoot();
+
+		//	Assert.IsTrue(root.Count >= 2);
+		//}
+
+		//public static IEnumerable<object[]> GetData_TestRootHasAtLeastTwoChildrenWhenNumberOfEntriesExceedsOrder()
+		//{
+		//	var order = 5;
+		//	var size = order + 1;
+
+		//	var dataSets = TestDataHelpers.GetTestDataSets(size);
+		//	return dataSets.Select(ds => new object[] { order, ds[0] });
+		//}
+
 		// Knuth's definition part 2 - Every node, except for the root and the leaves, has at least ceil(m/2) children
 		//[TestMethod]
 		//public void TestInnerNodesDegreesSatisfyOrder()
