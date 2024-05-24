@@ -152,13 +152,9 @@ namespace BTrees.Test
 		{
 			var order = 5;
 			var size = order - 1;
-			var ascending = TestDataHelpers.GetAscendingTestData(size);
-			var descending = TestDataHelpers.GetDescendingTestData(size);
-			var randomized = TestDataHelpers.GetRandomTestData(size);
 
-			yield return new object[] { order, ascending };
-			yield return new object[] { order, descending };
-			yield return new object[] { order, randomized };
+			var dataSets = TestDataHelpers.GetTestDataSets(size);
+			return dataSets.Select(ds => new object[] { order, ds[0] });
 		}
 
 		// Knuth's definition part 2 - Every node, except for the root and the leaves, has at least ceil(m/2) children
