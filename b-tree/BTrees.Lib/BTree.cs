@@ -1,7 +1,4 @@
-﻿
-
-
-namespace BTrees.Lib
+﻿namespace BTrees.Lib
 {
 	/*
 	 * Work in progress B-tree. This is implemented as a TDD code kata,

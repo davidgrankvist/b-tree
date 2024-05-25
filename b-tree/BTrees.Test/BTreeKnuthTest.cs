@@ -1,0 +1,103 @@
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace BTrees.Test
+{
+	/// <summary>
+	/// These tests make use of Knuth's definition of a B-tree to make sure that the test data
+	/// satisfies the right properties.
+	///
+	/// <br /><br />
+	/// See https://en.wikipedia.org/wiki/B-tree#Definition
+	/// </summary>
+	[TestClass]
+	public class BTreeKnuthTest
+	{
+		// Knuth's definition part 1 - Every node has at most m children
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSets), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestNumberOfChildrenDoesNotExceedOrder(IEnumerable<(int Key, int Value)> entries)
+		{
+			var order = 5;
+			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
+
+			var nodes = btree.Traverse();
+			foreach (var node in nodes)
+			{
+				Assert.IsTrue(node.Count <= btree.Order);
+			}
+		}
+
+		// Knuth's definition part 2 - Every node, except for the root and the leaves, has at least ceil(m/2) children
+		//[TestMethod]
+		//public void TestInnerNodesDegreesSatisfyOrder()
+		//{
+		//	var order = 5;
+		//	var entries = GetInsertionTestData();
+		//	var btree = CreateTree(entries, order);
+
+		//	var childrenLowerBound = order / 2 + (order % 2);
+
+		//	var nodes = btree.Traverse().Skip(1);
+		//	foreach(var node in nodes)
+		//	{
+		//		var isLeaf = node.Count == 0;
+		//		if (isLeaf)
+		//		{
+		//			continue;
+		//		}
+		//		Assert.IsTrue(node.Count >= childrenLowerBound);
+		//	}
+		//}
+
+		// Knuth's definition part 3 - The root node has at least two children unless it is a leaf
+		//
+		// case: leaf
+		[DataTestMethod]
+		[DynamicData(nameof(GetData_TestAllEntriesInRootWhenFewerThanOrder), DynamicDataSourceType.Method)]
+		public void TestAllEntriesInRootWhenFewerThanOrder(int order, IEnumerable<(int Key, int Value)> entries)
+		{
+			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
+
+			var root = btree.GetRoot();
+			var isLeaf = root.Count == 0;
+
+			Assert.IsTrue(isLeaf);
+		}
+
+		public static IEnumerable<object[]> GetData_TestAllEntriesInRootWhenFewerThanOrder()
+		{
+			var order = 5;
+			var size = order - 1;
+
+			var dataSets = TestDataHelpers.GetTestDataSets(size);
+			return dataSets.Select(ds => new object[] { order, ds[0] });
+		}
+
+		// Knuth's definition part 3 - The root node has at least two children unless it is a leaf
+		//
+		// case: not a leaf
+		//[DataTestMethod]
+		//[DynamicData(nameof(GetData_TestRootHasAtLeastTwoChildrenWhenNumberOfEntriesExceedsOrder), DynamicDataSourceType.Method)]
+		//public void TestRootHasAtLeastTwoChildrenWhenNumberOfEntriesExceedsOrder(int order, IEnumerable<(int Key, int Value)> entries)
+		//{
+		//	var btree = TestDataHelpers.CreateTreeWithData(entries, order);
+
+		//	var root = btree.GetRoot();
+
+		//	Assert.IsTrue(root.Count >= 2);
+		//}
+
+		//public static IEnumerable<object[]> GetData_TestRootHasAtLeastTwoChildrenWhenNumberOfEntriesExceedsOrder()
+		//{
+		//	var order = 5;
+		//	var size = order + 1;
+
+		//	var dataSets = TestDataHelpers.GetTestDataSets(size);
+		//	return dataSets.Select(ds => new object[] { order, ds[0] });
+		//}
+
+		// Knuth's definition part 4 - All leaves appear on the same level
+
+		// Knuth's definition part 5 - A non-leaf node with k children contains k - 1 keys
+	}
+}
