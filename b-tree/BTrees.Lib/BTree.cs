@@ -15,6 +15,8 @@ namespace BTrees.Lib
 		public int Order { get; private set; }
 		private Node? root = null;
 
+		public bool IsEmpty => root == null;
+
 		public BTree()
 		{
 			Order = DEFAULT_ORDER;

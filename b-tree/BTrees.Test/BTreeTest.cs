@@ -202,5 +202,13 @@ namespace BTrees.Test
 
 			Assert.ThrowsException<InvalidOperationException>(() => btree.Insert(0, 0));
 		}
+
+		[TestMethod]
+		public void TestIsEmptyWhenNothingIsInserted()
+		{
+			var btree = new BTree();
+
+			Assert.IsTrue(btree.IsEmpty);
+		}
 	}
 }

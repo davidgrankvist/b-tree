@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34902.65
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BTrees.Test", "BTrees.Test\BTrees.Test.csproj", "{B96068BB-39E8-484B-8D5C-E3F6253AF9EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BTrees.Test", "BTrees.Test\BTrees.Test.csproj", "{B96068BB-39E8-484B-8D5C-E3F6253AF9EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BTrees.Lib", "BTrees.Lib\BTrees.Lib.csproj", "{FB2CDF7E-4C10-4089-BF59-C1073BEAE748}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BTrees.Lib", "BTrees.Lib\BTrees.Lib.csproj", "{FB2CDF7E-4C10-4089-BF59-C1073BEAE748}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BTrees.Dev", "BTrees.Dev\BTrees.Dev.csproj", "{E310F44A-96A7-42D7-93C0-822EE7AF3E98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{FB2CDF7E-4C10-4089-BF59-C1073BEAE748}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB2CDF7E-4C10-4089-BF59-C1073BEAE748}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB2CDF7E-4C10-4089-BF59-C1073BEAE748}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E310F44A-96A7-42D7-93C0-822EE7AF3E98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E310F44A-96A7-42D7-93C0-822EE7AF3E98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E310F44A-96A7-42D7-93C0-822EE7AF3E98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E310F44A-96A7-42D7-93C0-822EE7AF3E98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
