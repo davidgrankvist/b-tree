@@ -1,6 +1,6 @@
 ﻿namespace BTrees.Lib
 {
-	internal class IBTreeUtils
+	internal class BTreeUtils
 	{
 		public static IEnumerable<IBTreeNode> TraverseNode(IBTreeNode node)
 		{

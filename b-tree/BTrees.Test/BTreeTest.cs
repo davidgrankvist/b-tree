@@ -1,4 +1,5 @@
 using BTrees.Lib;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BTrees.Test
 {
@@ -126,6 +127,80 @@ namespace BTrees.Test
 			{
 				Assert.IsTrue(node.Entries.IsSortedAsc());
 			}
+		}
+
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSets), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestNoNodeIsEmpty(IEnumerable<(int Key, int Value)> entries)
+		{
+			var btree = TestDataHelpers.CreateTreeWithData(entries);
+
+			foreach (var node in btree.Traverse())
+			{
+				Assert.IsTrue(node.Entries.Count() > 0);
+			}
+		}
+
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSets), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestNoEntryIsDuplicated(IEnumerable<(int Key, int Value)> entries)
+		{
+			var btree = TestDataHelpers.CreateTreeWithData(entries);
+
+			var visitCount = TestDataHelpers.GetVisitCount(TestDataHelpers.TraverseEntries(btree));
+			foreach (var countEntry in visitCount)
+			{
+				Assert.AreEqual(1, countEntry.Value, $"Found duplicate entry {countEntry.Key}");
+			}
+		}
+
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSets), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestNodeChildrenAreSortedAsc(IEnumerable<(int Key, int Value)> entries)
+		{
+			var btree = TestDataHelpers.CreateTreeWithData(entries);
+
+			foreach (var node in btree.Traverse())
+			{
+				var childrenFirstEntries = node.Children.Select(x => x.Entries.First());
+				Assert.IsTrue(childrenFirstEntries.IsSortedAsc());
+			}
+		}
+
+		/*
+		 * If the order is m and m values are inserted, then the root
+		 * should be split.
+		 *
+		 * For example, when the order is 3, then inserting 1, 2, 3 should give
+		 *
+		 *   1
+		 *  / \
+		 * 2   3
+		 *
+		 */
+		[DataTestMethod]
+		[DataRow(3)]
+		[DataRow(4)]
+		[DataRow(5)]
+		[DataRow(10)]
+		public void TestRootShouldSplitWhenExceedingEntryLimit(int order)
+		{
+			var entries = TestDataHelpers.GetAscendingTestData(order);
+			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
+
+			var root = btree.GetRoot();
+			var didSplit = root.Count == 2;
+
+			Assert.IsTrue(didSplit);
+		}
+
+		[TestMethod]
+		public void TestThrowsIfDuplicateKeyIsInserted()
+		{
+			var btree = new BTree();
+			btree.Insert(0, 0);
+
+			Assert.ThrowsException<InvalidOperationException>(() => btree.Insert(0, 0));
 		}
 	}
 }

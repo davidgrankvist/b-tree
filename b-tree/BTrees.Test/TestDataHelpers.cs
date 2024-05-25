@@ -46,12 +46,25 @@ namespace BTrees.Test
 
 		public static IEnumerable<(int Key, int Value)> GetRandomTestData(int size = DEFAULT_SIZE, int seed = DEFAULT_SEED)
 		{
+			var arr = new (int, int)[size];
+
+			for (var i = 0; i < size; i++)
+			{
+				arr[i] = (i, i + 10);
+			}
+
+			// shuffle
 			var random = new Random(seed);
 			for (var i = 0; i < size; i++)
 			{
-				var key = random.Next(size);
-				yield return (key, key + 10);
+				var iSwap = random.Next(size);
+
+				var tmp = arr[i];
+				arr[i] = arr[iSwap];
+				arr[iSwap] = tmp;
 			}
+
+			return arr;
 		}
 
 		public static BTree CreateTreeWithData(IEnumerable<(int Key, int Value)> entries, int order = BTree.DEFAULT_ORDER)

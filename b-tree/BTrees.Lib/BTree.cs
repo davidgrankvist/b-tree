@@ -1,4 +1,6 @@
-﻿namespace BTrees.Lib
+﻿using System.Diagnostics;
+
+namespace BTrees.Lib
 {
 	/*
 	 * Work in progress B-tree. This is implemented as a TDD code kata,
@@ -50,21 +52,25 @@
 				return;
 			}
 
+			if (Find(key) != null)
+			{
+				throw new InvalidOperationException();
+			}
+
 			InsertInto(key, val, root);
 		}
 
 		private void InsertInto(int key, int val, Node node)
 		{
+			// Phase 1 - Find a leaf to insert the entry into
 			if (node.IsLeaf() && HasSlots(node))
 			{
 				node.Insert(key, val);
 			}
 			else if (node.IsLeaf())
 			{
-				// split
-
-				// dummy implementation - just add a new node for now
-				node.children.Add(new Node(key, val));
+				// the leaf has no more slots, so we need to split it
+				SplitInsert(key, val, node);
 			}
 			else
 			{
@@ -73,6 +79,74 @@
 				// dummy implementation - always pick the first one
 				InsertInto(key, val, node.children.First());
 			}
+		}
+
+		private void SplitInsert(int key, int val, Node node)
+		{
+			// Phase 2 - Splitting
+			//
+			// 1. Split a node by the mid entry
+			// 2. Insert the mid into the parent.
+			//     If needed, keep splitting up the tree.
+
+			// We performed a split and the parent had room for a new entry
+			if (HasSlots(node))
+			{
+				node.Insert(key, val);
+				return;
+			}
+
+			// if we split the root, then we need a new root
+			if (node == root)
+			{
+				var newRoot = new Node();
+				root = newRoot;
+				node.parent = newRoot;
+			}
+			var parent = node.parent;
+
+			// create two splits by the mid value
+			node.Insert(key, val); // temporary insert to include new entry when looking for mid
+			var mid = node.entries[node.entries.Count / 2];
+			var left = new Node(parent);
+			var right = new Node(parent);
+			// split the node entries
+			foreach (var entry in node.entries)
+			{
+				if (entry.Key <= mid.Key)
+				{
+					left.Insert(entry.Key, entry.Value);
+				}
+				else
+				{
+					right.Insert(entry.Key, entry.Value);
+				}
+			}
+			// remove at least one mid as it will be inserted into the parent
+			left.Remove(mid.Key);
+
+			// existing children are pushed down the new left/right subtrees
+			foreach (var child in node.children)
+			{
+				var max = child.entries.Last().Key;
+
+				if (max <= mid.Key)
+				{
+					left.InsertChild(child);
+				}
+				else
+				{
+					right.InsertChild(child);
+				}
+			}
+
+			// replace the node with its splits
+			parent.RemoveChild(node);
+			parent.InsertChild(left);
+			parent.InsertChild(right);
+
+			// finally insert the mid into the parent
+			SplitInsert(mid.Key, mid.Value, parent);
 		}
 
 		private bool HasSlots(Node node)
@@ -109,11 +183,13 @@
 
 		public IEnumerable<IBTreeNode> Traverse()
 		{
-			return IBTreeUtils.TraverseNode(GetRoot());
+			return BTreeUtils.TraverseNode(GetRoot());
 		}
 
 		private class Node : IBTreeNode
 		{
+			public Node parent;
+
 			public List<(int Key, int Value)> entries = new List<(int Key, int Value)>();
 			public List<Node> children = new List<Node>();
 
@@ -123,9 +199,19 @@
 			public int Count { get => children.Count; }
 			public int EntryCount { get => entries.Count; }
 
+			public Node()
+			{
+
+			}
+
 			public Node(int key, int val)
 			{
 				entries.Add((key, val));
+			}
+
+			public Node(Node parent)
+			{
+				this.parent = parent;
 			}
 
 			public int? Find(int key)
@@ -158,6 +244,18 @@
 			public bool IsLeaf()
 			{
 				return Count == 0;
+			}
+
+			public void InsertChild(Node node)
+			{
+				var max = node.EntryCount == 0 ? -1 : node.entries.Last().Key;
+				var iAdd = children.FindLastIndex((x) => max > x.entries.Last().Key);
+				children.Insert(iAdd + 1, node);
+			}
+
+			public void RemoveChild(Node node)
+			{
+				children.Remove(node);
 			}
 		}
 	}
