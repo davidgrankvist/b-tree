@@ -106,6 +106,20 @@ namespace BTrees.Lib
 			}
 		}
 
+		public IBTreeNode GetRoot()
+		{
+			if (root == null)
+			{
+				throw new InvalidOperationException();
+			}
+			return root;
+		}
+
+		public IEnumerable<IBTreeNode> Traverse()
+		{
+			return IBTreeUtils.TraverseNode(GetRoot());
+		}
+
 		private class Node : IBTreeNode
 		{
 			public Node? Next;
@@ -115,7 +129,7 @@ namespace BTrees.Lib
 			public IEnumerable<IBTreeNode> Children => GetChildren();
 
 			public int Count { get => Children.Count(); }
-			public int EntryCount { get => entries.Count(); }
+			public int EntryCount { get => entries.Count; }
 
 			public Node(int key, int val)
 			{
@@ -155,44 +169,6 @@ namespace BTrees.Lib
 				if (iRemove != -1)
 				{
 					entries.RemoveAt(iRemove);
-				}
-
-			}
-		}
-
-		public IBTreeNode GetRoot()
-		{
-			if (root == null)
-			{
-				throw new InvalidOperationException();
-			}
-			return root;
-		}
-
-		public interface IBTreeNode
-		{
-			public IEnumerable<(int Key, int Value)> Entries { get; }
-			public IEnumerable<IBTreeNode> Children { get; }
-			public int Count { get; }
-
-			public int? Find(int key);
-		}
-
-		public IEnumerable<IBTreeNode> Traverse()
-		{
-			return TraverseNode(GetRoot());
-		}
-
-		private static IEnumerable<IBTreeNode> TraverseNode(IBTreeNode node)
-		{
-			yield return node;
-
-			foreach (var child in node.Children)
-			{
-				var subtree = TraverseNode(child);
-				foreach (var subtreeNode in subtree)
-				{
-					yield return subtreeNode;
 				}
 			}
 		}
