@@ -25,47 +25,59 @@
 
 		public int? Find(int key)
 		{
-			var current = root;
-			while (current != null)
+			if (root == null)
 			{
-				var found = current.Find(key);
+				return null;
+			}
+
+			// naive traversal search
+			foreach (var node in Traverse())
+			{
+				var found = node.Find(key);
 				if (found != null)
 				{
 					return found;
 				}
-				current = current.Next;
 			}
 			return null;
 		}
 
 		public void Insert(int key, int val)
 		{
-			var node = new Node(key, val);
 			if (root == null)
 			{
-				root = node;
+				root = new Node(key, val);
 				return;
 			}
 
-			var prev = root;
-			var current = root;
-			var didInsert = false;
-			while (current != null)
-			{
-				if (current.EntryCount < Order - 1)
-				{
-					current.Insert(key, val);
-					didInsert = true;
-					break;
-				}
-				prev = current;
-				current = current.Next;
-			}
+			InsertInto(key, val, root);
+		}
 
-			if (!didInsert)
+		private void InsertInto(int key, int val, Node node)
+		{
+			if (node.IsLeaf() && HasSlots(node))
 			{
-				prev.Next = node;
+				node.Insert(key, val);
 			}
+			else if (node.IsLeaf())
+			{
+				// split
+
+				// dummy implementation - just add a new node for now
+				node.children.Add(new Node(key, val));
+			}
+			else
+			{
+				// find the subtree to insert into
+
+				// dummy implementation - always pick the first one
+				InsertInto(key, val, node.children.First());
+			}
+		}
+
+		private bool HasSlots(Node node)
+		{
+			return node.EntryCount < Order - 1;
 		}
 
 		public void Delete(int key)
@@ -75,31 +87,14 @@
 				return;
 			}
 
-			Node? prev = null;
-			var current = root;
-
-			while (current != null)
+			foreach (Node node in Traverse())
 			{
-				var found = current.Find(key);
+				var found = node.Find(key);
 				if (found != null)
 				{
-					if (current.EntryCount > 1)
-					{
-						current.Remove(key);
-					}
-					else if (prev == null)
-					{
-						root = current.Next;
-					}
-					else
-					{
-						prev.Next = current.Next;
-					}
-					break;
+					node.Remove(key);
+					return;
 				}
-
-				prev = current;
-				current = current.Next;
 			}
 		}
 
@@ -119,13 +114,13 @@
 
 		private class Node : IBTreeNode
 		{
-			public Node? Next;
-			private List<(int Key, int Value)> entries = new List<(int Key, int Value)>();
+			public List<(int Key, int Value)> entries = new List<(int Key, int Value)>();
+			public List<Node> children = new List<Node>();
 
 			public IEnumerable<(int Key, int Value)> Entries => entries;
-			public IEnumerable<IBTreeNode> Children => GetChildren();
+			public IEnumerable<IBTreeNode> Children => children;
 
-			public int Count { get => Children.Count(); }
+			public int Count { get => children.Count; }
 			public int EntryCount { get => entries.Count; }
 
 			public Node(int key, int val)
@@ -145,15 +140,6 @@
 				return null;
 			}
 
-			private IEnumerable<IBTreeNode> GetChildren()
-			{
-				if (Next == null)
-				{
-					yield break;
-				}
-				yield return Next;
-			}
-
 			public void Insert(int key, int val)
 			{
 				var iAdd = entries.FindLastIndex((x) => key > x.Key);
@@ -167,6 +153,11 @@
 				{
 					entries.RemoveAt(iRemove);
 				}
+			}
+
+			public bool IsLeaf()
+			{
+				return Count == 0;
 			}
 		}
 	}
