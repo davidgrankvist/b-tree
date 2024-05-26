@@ -18,6 +18,21 @@ namespace BTrees.Dev.Experiments
 			}
 		}
 
+		public static void InsertPresetAndPrint(int[] keys, int order = 3)
+		{
+			PrintHeader();
+
+			var btree = new BTree(order);
+			for (var i = 0; i < keys.Length; i++)
+			{
+				var key = keys[i];
+				btree.Insert(key, key);
+
+				PrintInsert(key);
+				PrintResult(btree, i < keys.Length - 1);
+			}
+		}
+
 		private static void PrintHeader()
 		{
 			Console.WriteLine("############################");
