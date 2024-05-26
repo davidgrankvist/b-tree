@@ -211,5 +211,31 @@ namespace BTrees.Test
 
 			Assert.IsTrue(btree.IsEmpty);
 		}
+
+		/*
+		 * Make sure that new entries are inserted into the correct leaf.
+		 *
+		 * Example:
+		 *
+		 * If we insert 0 it should be the first entry in the left leaf
+		 *
+		 *    1           1
+		 *   / \    ->   / \
+		 *  2   3      0,2  3
+		 *
+		 */
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSets), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestEntriesOnTheSameLevelAreSorted(IEnumerable<(int Key, int Value)> entries)
+		{
+			var btree = TestDataHelpers.CreateTreeWithData(entries);
+			var nonLeafNodes = btree.Traverse().Where(x => x.Children.Any());
+
+			foreach (var node in nonLeafNodes)
+			{
+				var allEntriesInLevel = node.Children.SelectMany(child => child.Entries);
+				Assert.IsTrue(allEntriesInLevel.IsSortedAsc());
+			}
+		}
 	}
 }
