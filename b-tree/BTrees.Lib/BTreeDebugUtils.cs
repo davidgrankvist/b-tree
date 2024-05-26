@@ -41,11 +41,12 @@ namespace BTrees.Lib
 			var nodeStr = StringifyNode(node);
 			sb.AppendLine(nodeStr);
 
+			var nextIndentation = indentation + BRANCH_STR.Length;
 			foreach (var child in node.Children)
 			{
-				var branchStr = BRANCH_STR.PadLeft(indentation);
+				var branchStr = BRANCH_STR.PadLeft(nextIndentation);
 				sb.Append(branchStr);
-				StringifySubtree(child, sb, indentation + BRANCH_STR.Length);
+				StringifySubtree(child, sb, nextIndentation);
 			}
 		}
 
