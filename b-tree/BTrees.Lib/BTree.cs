@@ -91,9 +91,7 @@
 
 			var mid = FindMid(node);
 			var (left, right) = SplitEntries(node, mid.Key);
-			var (leftChildren, rightChildren) = SplitChildren(node.children, mid.Key);
-			left.children = leftChildren;
-			right.children = rightChildren;
+			SplitChildren(node.children, mid.Key, left, right);
 
 			if (node.parent == null)
 			{
@@ -161,7 +159,7 @@
 			return (left, right);
 		}
 
-		private static (List<Node> LeftChildren, List<Node> RightChildren) SplitChildren(List<Node> children, int midKey)
+		private static void SplitChildren(List<Node> children, int midKey, Node left, Node right)
 		{
 			var leftChildren = new List<Node>();
 			var rightChildren = new List<Node>();
@@ -172,15 +170,18 @@
 
 				if (max <= midKey)
 				{
+					child.parent = left;
 					leftChildren.Add(child);
 				}
 				else
 				{
+					child.parent = right;
 					rightChildren.Add(child);
 				}
 			}
 
-			return (leftChildren, rightChildren);
+			left.children = leftChildren;
+			right.children = rightChildren;
 		}
 
 
