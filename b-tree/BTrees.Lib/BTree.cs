@@ -54,7 +54,7 @@
 
 			if (Find(key) != null)
 			{
-				throw new InvalidOperationException();
+				throw new InvalidOperationException("Duplicate keys are not allowed in this B-tree implementation.");
 			}
 
 			InsertInto(key, val, root);
@@ -216,7 +216,7 @@
 		{
 			if (root == null)
 			{
-				throw new InvalidOperationException();
+				throw new InvalidOperationException("Unable to retrieve root node. The tree is empty.");
 			}
 			return root;
 		}
