@@ -47,28 +47,30 @@ namespace BTrees.Dev.Experiments
 		public static void InsertInteractiveAndPrint(int order = 3)
 		{
 			PrintHeader();
-			Console.WriteLine("Write the key to insert, followed by enter. To exit, press enter or hit Ctrl+C");
+			Console.WriteLine("Write the key to insert, followed by enter. Insert multiple keys by separating with commas. To exit, press enter or hit Ctrl+C");
 			Console.WriteLine();
 
 			var btree = new BTree(order);
 
 			while (true)
 			{
-				var key = InsertInputPrompt();
-				if (!key.HasValue)
+				var keys = InsertInputPrompt();
+				if (keys == null)
 				{
 					break;
 				}
 
-				var k = key.Value;
-				btree.Insert(k, k);
+				foreach (var key in keys)
+				{
+					btree.Insert(key, key);
 
-				PrintInsert(k);
-				PrintResult(btree, true);
+					PrintInsert(key);
+					PrintResult(btree, true);
+				}
 			}
 		}
 
-		private static int? InsertInputPrompt()
+		private static int[]? InsertInputPrompt()
 		{
 			Console.Write("Input: ");
 			var input = Console.ReadLine();
@@ -80,16 +82,25 @@ namespace BTrees.Dev.Experiments
 				return null;
 			}
 
-			var didParse = int.TryParse(input, out var key);
+			var inputs = input.Split(",");
+			var keys = new int[inputs.Length];
 
-			if (!didParse)
+			for (var i = 0; i < inputs.Length; i++)
 			{
-				Console.WriteLine("Unable to parse integer. Exiting.");
+				var trimmedInput = inputs[i].Trim();
+				var didParse = int.TryParse(trimmedInput, out var key);
 
-				return null;
+				if (!didParse)
+				{
+					Console.WriteLine("Unable to parse input. Exiting.");
+
+					return null;
+				}
+
+				keys[i] = key;
 			}
 
-			return key;
+			return keys;
 		}
 	}
 }
