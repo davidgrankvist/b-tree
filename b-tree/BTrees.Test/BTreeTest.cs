@@ -159,8 +159,9 @@ namespace BTrees.Test
 		public void TestNodeChildrenAreSortedAsc(IEnumerable<(int Key, int Value)> entries)
 		{
 			var btree = TestDataHelpers.CreateTreeWithData(entries);
+			var nonLeafNodes = btree.Traverse().Where(x => x.Children.Any());
 
-			foreach (var node in btree.Traverse())
+			foreach (var node in nonLeafNodes)
 			{
 				var childrenFirstEntries = node.Children.Select(x => x.Entries.First());
 				Assert.IsTrue(childrenFirstEntries.IsSortedAsc());
