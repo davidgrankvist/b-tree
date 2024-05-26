@@ -100,29 +100,35 @@
 				// if we split the root, then we need a new root
 				var newRoot = new Node();
 
+				// lift the mid entry
 				newRoot.Insert(mid.Key, mid.Value);
 
+				// replace current node with the left/right parts
 				newRoot.InsertChild(left);
 				newRoot.InsertChild(right);
 				left.parent = newRoot;
 				right.parent = newRoot;
 
+				// no further splitting is required as the new root has exactly two children
 				root = newRoot;
 			}
 			else
 			{
 				var parent = node.parent;
 
+				// lift the mid entry
 				parent.Insert(mid.Key, mid.Value);
 
+				// replace current node with the left/right parts
 				parent.RemoveChild(node);
 				parent.InsertChild(left);
 				parent.InsertChild(right);
 				left.parent = parent;
 				right.parent = parent;
 
-				// if the parent is now invalid, we need to correct it
-				if (parent.EntryCount > Order - 1 || parent.Count > Order)
+				// If the parent now has too many entries or children,
+				// then this is corrected with a split
+				if (IsOverfull(parent))
 				{
 					SplitNode(parent);
 				}
@@ -181,6 +187,11 @@
 		private bool HasSlots(Node node)
 		{
 			return node.EntryCount < Order - 1;
+		}
+
+		private bool IsOverfull(Node node)
+		{
+			return node.EntryCount > Order - 1;
 		}
 
 		public void Delete(int key)
