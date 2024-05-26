@@ -13,9 +13,9 @@ namespace BTrees.Test
 		public const int DEFAULT_SEED = 10;
 		public static readonly IEnumerable<int> DEFAULT_ORDERS = new int[] { 3, 5, 10 };
 
-		public static IEnumerable<object[]> GetDefaltTestDataSetsWithOrders(int size = DEFAULT_SIZE, int seed = DEFAULT_SEED)
+		public static IEnumerable<object[]> GetDefaultTestDataSetsWithOrders()
 		{
-			return GetTestDataSetsWithOrders(DEFAULT_ORDERS, size, seed);
+			return GetTestDataSetsWithOrders(DEFAULT_ORDERS);
 		}
 
 		public static IEnumerable<object[]> GetTestDataSetsWithOrders(IEnumerable<int> orders, int size = DEFAULT_SIZE, int seed = DEFAULT_SEED)
@@ -26,7 +26,7 @@ namespace BTrees.Test
 			{
 				foreach (var dataSet in dataSets)
 				{
-					yield return new object[] { order, dataSet };
+					yield return new object[] { order, dataSet[0] };
 				}
 			}
 		}

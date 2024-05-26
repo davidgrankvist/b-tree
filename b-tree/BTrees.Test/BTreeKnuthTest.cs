@@ -14,7 +14,7 @@ namespace BTrees.Test
 	{
 		// Knuth's definition part 1 - Every node has at most m children
 		[DataTestMethod]
-		[DynamicData(nameof(TestDataHelpers.GetDefaltTestDataSetsWithOrders), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSetsWithOrders), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
 		public void TestNumberOfChildrenDoesNotExceedOrder(int order, IEnumerable<(int Key, int Value)> entries)
 		{
 			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
