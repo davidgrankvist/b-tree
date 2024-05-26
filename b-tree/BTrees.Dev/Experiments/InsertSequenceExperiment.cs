@@ -47,8 +47,7 @@ namespace BTrees.Dev.Experiments
 		public static void InsertInteractiveAndPrint(int order = 3)
 		{
 			PrintHeader();
-			Console.WriteLine("Write the key to insert, followed by enter. Insert multiple keys by separating with commas. To exit, press enter or hit Ctrl+C");
-			Console.WriteLine();
+			PrintInteractiveInstructions();
 
 			var btree = new BTree(order);
 
@@ -101,6 +100,16 @@ namespace BTrees.Dev.Experiments
 			}
 
 			return keys;
+		}
+
+		private static void PrintInteractiveInstructions()
+		{
+			Console.WriteLine();
+			Console.WriteLine("Instructions:");
+			Console.WriteLine("- Write the key to insert, followed by enter");
+			Console.WriteLine("- Insert multiple keys by separating with commas");
+			Console.WriteLine("- To exit, press enter or hit Ctrl+C");
+			Console.WriteLine();
 		}
 	}
 }
