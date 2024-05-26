@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace BTrees.Lib
+﻿namespace BTrees.Lib
 {
 	/*
 	 * Work in progress B-tree. This is implemented as a TDD code kata,
@@ -72,7 +70,10 @@ namespace BTrees.Lib
 			else if (node.IsLeaf())
 			{
 				// the leaf has no more slots, so we need to split it
-				SplitInsert(key, val, node);
+
+				// insert beforehand and let the split correct this
+				node.Insert(key, val);
+				SplitNode(node);
 			}
 			else
 			{
@@ -83,73 +84,99 @@ namespace BTrees.Lib
 			}
 		}
 
-		private void SplitInsert(int key, int val, Node node)
+		private void SplitNode(Node node)
 		{
-			// Phase 2 - Splitting
-			//
-			// 1. Split a node by the mid entry
-			// 2. Insert the mid into the parent.
-			//     If needed, keep splitting up the tree.
+			// Phase 2 - Split a node that has exceeded its capacity
+			// If needed, split parents recursively.
 
-			// We performed a split and the parent had room for a new entry
-			if (HasSlots(node))
-			{
-				node.Insert(key, val);
-				return;
-			}
+			var mid = FindMid(node);
+			var (left, right) = SplitEntries(node, mid.Key);
+			var (leftChildren, rightChildren) = SplitChildren(node.children, mid.Key);
+			left.children = leftChildren;
+			right.children = rightChildren;
 
-			// if we split the root, then we need a new root
-			if (node == root)
+			if (node.parent == null)
 			{
+				// if we split the root, then we need a new root
 				var newRoot = new Node();
-				root = newRoot;
-				node.parent = newRoot;
-			}
-			var parent = node.parent;
 
-			// create two splits by the mid value
-			node.Insert(key, val); // temporary insert to include new entry when looking for mid
-			var mid = node.entries[node.entries.Count / 2];
-			var left = new Node(parent);
-			var right = new Node(parent);
-			// split the node entries
+				newRoot.Insert(mid.Key, mid.Value);
+
+				newRoot.InsertChild(left);
+				newRoot.InsertChild(right);
+				left.parent = newRoot;
+				right.parent = newRoot;
+
+				root = newRoot;
+			}
+			else
+			{
+				var parent = node.parent;
+
+				parent.Insert(mid.Key, mid.Value);
+
+				parent.RemoveChild(node);
+				parent.InsertChild(left);
+				parent.InsertChild(right);
+				left.parent = parent;
+				right.parent = parent;
+
+				// if the parent is now invalid, we need to correct it
+				if (parent.EntryCount > Order - 1 || parent.Count > Order)
+				{
+					SplitNode(parent);
+				}
+			}
+		}
+
+		private static (int Key, int Value) FindMid(Node node)
+		{
+			return node.entries[node.entries.Count / 2];
+		}
+
+		private static (Node Left, Node Right) SplitEntries(Node node, int midKey)
+		{
+			// split by mid
+			var left = new Node(); // no parent node defined for now
+			var right = new Node();
 			foreach (var entry in node.entries)
 			{
-				if (entry.Key <= mid.Key)
+				if (entry.Key < midKey)
 				{
 					left.Insert(entry.Key, entry.Value);
 				}
-				else
+				else if (entry.Key > midKey)
 				{
 					right.Insert(entry.Key, entry.Value);
 				}
+				// skip mid as it will be inserted into a parent node
 			}
-			// remove at least one mid as it will be inserted into the parent
-			left.Remove(mid.Key);
 
-			// existing children are pushed down the new left/right subtrees
-			foreach (var child in node.children)
+			return (left, right);
+		}
+
+		private static (List<Node> LeftChildren, List<Node> RightChildren) SplitChildren(List<Node> children, int midKey)
+		{
+			var leftChildren = new List<Node>();
+			var rightChildren = new List<Node>();
+
+			foreach (var child in children)
 			{
 				var max = child.entries.Last().Key;
 
-				if (max <= mid.Key)
+				if (max <= midKey)
 				{
-					left.InsertChild(child);
+					leftChildren.Add(child);
 				}
 				else
 				{
-					right.InsertChild(child);
+					rightChildren.Add(child);
 				}
 			}
 
-			// replace the node with its splits
-			parent.RemoveChild(node);
-			parent.InsertChild(left);
-			parent.InsertChild(right);
-
-			// finally insert the mid into the parent
-			SplitInsert(mid.Key, mid.Value, parent);
+			return (leftChildren, rightChildren);
 		}
+
 
 		private bool HasSlots(Node node)
 		{
