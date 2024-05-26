@@ -27,26 +27,25 @@ namespace BTrees.Test
 		}
 
 		// Knuth's definition part 2 - Every node, except for the root and the leaves, has at least ceil(m/2) children
-		//[TestMethod]
-		//public void TestInnerNodesDegreesSatisfyOrder()
-		//{
-		//	var order = 5;
-		//	var entries = GetInsertionTestData();
-		//	var btree = CreateTree(entries, order);
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSetsWithOrders), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestInnerNodesDegreesSatisfyOrder(int order, IEnumerable<(int Key, int Value)> entries)
+		{
+			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
 
-		//	var childrenLowerBound = order / 2 + (order % 2);
+			var childrenLowerBound = order / 2 + (order % 2);
 
-		//	var nodes = btree.Traverse().Skip(1);
-		//	foreach(var node in nodes)
-		//	{
-		//		var isLeaf = node.Count == 0;
-		//		if (isLeaf)
-		//		{
-		//			continue;
-		//		}
-		//		Assert.IsTrue(node.Count >= childrenLowerBound);
-		//	}
-		//}
+			var nodes = btree.Traverse().Skip(1);
+			foreach (var node in nodes)
+			{
+				var isLeaf = node.Count == 0;
+				if (isLeaf)
+				{
+					continue;
+				}
+				Assert.IsTrue(node.Count >= childrenLowerBound);
+			}
+		}
 
 		// Knuth's definition part 3 - The root node has at least two children unless it is a leaf
 		//
@@ -65,35 +64,45 @@ namespace BTrees.Test
 
 		public static IEnumerable<object[]> GetData_TestAllEntriesInRootWhenFewerThanOrder()
 		{
-			var order = 5;
-			var size = order - 1;
-
-			var dataSets = TestDataHelpers.GetTestDataSets(size);
-			return dataSets.Select(ds => new object[] { order, ds[0] });
+			var orders = TestDataHelpers.DEFAULT_ORDERS;
+			foreach (var order in orders)
+			{
+				var size = order - 1;
+				var dataSets = TestDataHelpers.GetTestDataSets(size);
+				foreach (var dataSet in dataSets)
+				{
+					yield return new object[] { order, dataSet[0] };
+				}
+			}
 		}
 
 		// Knuth's definition part 3 - The root node has at least two children unless it is a leaf
 		//
 		// case: not a leaf
-		//[DataTestMethod]
-		//[DynamicData(nameof(GetData_TestRootHasAtLeastTwoChildrenWhenNumberOfEntriesExceedsOrder), DynamicDataSourceType.Method)]
-		//public void TestRootHasAtLeastTwoChildrenWhenNumberOfEntriesExceedsOrder(int order, IEnumerable<(int Key, int Value)> entries)
-		//{
-		//	var btree = TestDataHelpers.CreateTreeWithData(entries, order);
+		[DataTestMethod]
+		[DynamicData(nameof(GetData_TestRootHasAtLeastTwoChildrenWhenNumberOfEntriesExceedsOrder), DynamicDataSourceType.Method)]
+		public void TestRootHasAtLeastTwoChildrenWhenNumberOfEntriesExceedsOrder(int order, IEnumerable<(int Key, int Value)> entries)
+		{
+			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
 
-		//	var root = btree.GetRoot();
+			var root = btree.GetRoot();
 
-		//	Assert.IsTrue(root.Count >= 2);
-		//}
+			Assert.IsTrue(root.Count >= 2);
+		}
 
-		//public static IEnumerable<object[]> GetData_TestRootHasAtLeastTwoChildrenWhenNumberOfEntriesExceedsOrder()
-		//{
-		//	var order = 5;
-		//	var size = order + 1;
-
-		//	var dataSets = TestDataHelpers.GetTestDataSets(size);
-		//	return dataSets.Select(ds => new object[] { order, ds[0] });
-		//}
+		public static IEnumerable<object[]> GetData_TestRootHasAtLeastTwoChildrenWhenNumberOfEntriesExceedsOrder()
+		{
+			var orders = TestDataHelpers.DEFAULT_ORDERS;
+			foreach (var order in orders)
+			{
+				var size = order + 1;
+				var dataSets = TestDataHelpers.GetTestDataSets(size);
+				foreach (var dataSet in dataSets)
+				{
+					yield return new object[] { order, dataSet[0] };
+				}
+			}
+		}
 
 		// Knuth's definition part 4 - All leaves appear on the same level
 
