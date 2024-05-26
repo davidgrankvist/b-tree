@@ -6,7 +6,7 @@ namespace BTrees.Dev
 	{
 		static void Main(string[] args)
 		{
-			InsertSequenceExperiment.InsertAscendingAndPrint(7);
+			InsertSequenceExperiment.InsertInteractiveAndPrint();
 		}
 	}
 }
