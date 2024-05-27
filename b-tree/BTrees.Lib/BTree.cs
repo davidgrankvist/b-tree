@@ -57,31 +57,42 @@
 				throw new InvalidOperationException("Duplicate keys are not allowed in this B-tree implementation.");
 			}
 
-			InsertInto(key, val, root);
+			BottomUpInsert(key, val, root);
 		}
 
-		private void InsertInto(int key, int val, Node node)
+		private void BottomUpInsert(int key, int val, Node node)
 		{
 			// Phase 1 - Find a leaf to insert the entry into
-			if (node.IsLeaf() && HasSlots(node))
+			if (node.IsLeaf())
 			{
 				node.Insert(key, val);
-			}
-			else if (node.IsLeaf())
-			{
-				// the leaf has no more slots, so we need to split it
+				if (IsOverfull(node))
+				{
+					SplitNode(node);
 
-				// insert beforehand and let the split correct this
-				node.Insert(key, val);
-				SplitNode(node);
+				}
 			}
 			else
 			{
-				// find the subtree to insert into
-
-				// dummy implementation - always pick the first one
-				InsertInto(key, val, node.children.First());
+				BottomUpInsert(key, val, FindTargetChild(node, key));
 			}
+		}
+
+		private static Node FindTargetChild(Node node, int key)
+		{
+			// Find the entry which has the target child
+			var iTargetEntry = node.entries.FindIndex(x => key < x.Key);
+			if (iTargetEntry == -1)
+			{
+				iTargetEntry = node.entries.Count - 1;
+			}
+			var targetEntryKey = node.entries[iTargetEntry].Key;
+
+			// Pick left/right child of the entry as target
+			var isLeft = key < targetEntryKey;
+			var iTargetNode = isLeft ? iTargetEntry : iTargetEntry + 1;
+
+			return node.children[iTargetNode];
 		}
 
 		private void SplitNode(Node node)
@@ -182,12 +193,6 @@
 
 			left.children = leftChildren;
 			right.children = rightChildren;
-		}
-
-
-		private bool HasSlots(Node node)
-		{
-			return node.EntryCount < Order - 1;
 		}
 
 		private bool IsOverfull(Node node)
