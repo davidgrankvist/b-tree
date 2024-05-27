@@ -32,14 +32,20 @@
 				return null;
 			}
 
-			// naive traversal search
-			foreach (var node in Traverse())
+			var current = root;
+			while (current != null)
 			{
-				var found = node.Find(key);
+				var found = current.Find(key);
 				if (found != null)
 				{
 					return found;
 				}
+
+				if (current.IsLeaf())
+				{
+					break;
+				}
+				current = FindTargetChild(current, key);
 			}
 			return null;
 		}
@@ -66,10 +72,10 @@
 			if (node.IsLeaf())
 			{
 				node.Insert(key, val);
+
 				if (IsOverfull(node))
 				{
 					SplitNode(node);
-
 				}
 			}
 			else
