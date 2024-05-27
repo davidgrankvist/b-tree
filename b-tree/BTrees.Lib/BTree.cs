@@ -1,11 +1,5 @@
 ﻿namespace BTrees.Lib
 {
-	/*
-	 * Work in progress B-tree. This is implemented as a TDD code kata,
-	 * starting with a linked-list structure and incrementing from there.
-	 *
-	 * The current implementation details may look strange :)
-	 */
 	public class BTree
 	{
 		public const int DEFAULT_ORDER = 3;
@@ -206,6 +200,7 @@
 			return node.EntryCount > Order - 1;
 		}
 
+		// TODO: replace dummy implementation
 		public void Delete(int key)
 		{
 			if (root == null)

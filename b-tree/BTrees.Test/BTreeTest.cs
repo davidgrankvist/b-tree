@@ -237,5 +237,7 @@ namespace BTrees.Test
 				Assert.IsTrue(allEntriesInLevel.IsSortedAsc());
 			}
 		}
+
+		// TODO: add tests that cause the dummy delete operation to fail
 	}
 }
