@@ -107,5 +107,17 @@ namespace BTrees.Test
 		// Knuth's definition part 4 - All leaves appear on the same level
 
 		// Knuth's definition part 5 - A non-leaf node with k children contains k - 1 keys
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSetsWithOrders), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestNonLeafNodesHasOneLessKeysThanChildren(int order, IEnumerable<(int Key, int Value)> entries)
+		{
+			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
+
+			var nonLeafNodes = btree.Traverse().Where(x => x.Children.Any());
+			foreach (var node in nonLeafNodes)
+			{
+				Assert.IsTrue(node.Count - 1 == node.Entries.Count());
+			}
+		}
 	}
 }
