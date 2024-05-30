@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using BTrees.Lib;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BTrees.Test
 {
@@ -105,7 +106,18 @@ namespace BTrees.Test
 		}
 
 		// Knuth's definition part 4 - All leaves appear on the same level
-		// TODO: add this
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSetsWithOrders), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestAllLeavesAppearOnTheSameLevel(int order, IEnumerable<(int Key, int Value)> entries)
+		{
+			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
+
+			var leaves = BTreeUtils.TraverseNodeWithDepth(btree.GetRoot()).Where(x => !x.Node.Children.Any());
+			var depths = leaves.Select(x => x.Depth);
+			var firstDepth = depths.First();
+
+			Assert.IsTrue(depths.All(x => x == firstDepth));
+		}
 
 		// Knuth's definition part 5 - A non-leaf node with k children contains k - 1 keys
 		[DataTestMethod]
