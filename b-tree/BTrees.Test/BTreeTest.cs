@@ -250,5 +250,32 @@ namespace BTrees.Test
 
 			Assert.IsTrue(btree.IsEmpty);
 		}
+
+		/*
+		 * If the order is m and we insert m elements we first get a split. If we then delete
+		 * one entry, that should undo the split.
+		 *
+		 * Example:
+		 *
+		 * Tree of order 3. Insert 1,2,3 and remove 3.
+		 *
+		 *   1
+		 *  / \   ->  1,2
+		 * 2   3
+		 */
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultOrders), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestRootShouldMergeAfterDelete(int order)
+		{
+			var entries = TestDataHelpers.GetAscendingTestData(order);
+			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
+
+			var firstKey = entries.First().Key;
+			btree.Delete(firstKey);
+
+			var rootIsLeaf = btree.GetRoot().Count == 0;
+
+			Assert.IsTrue(rootIsLeaf);
+		}
 	}
 }
