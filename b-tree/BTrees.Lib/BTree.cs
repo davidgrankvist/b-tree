@@ -21,18 +21,18 @@
 
 		public int? Find(int key)
 		{
-			if (root == null)
-			{
-				return null;
-			}
+			return FindWithNode(key)?.Value;
+		}
 
+		private (Node Node, int Value)? FindWithNode(int key)
+		{
 			var current = root;
 			while (current != null)
 			{
 				var found = current.Find(key);
 				if (found != null)
 				{
-					return found;
+					return (current, found.Value);
 				}
 
 				if (current.IsLeaf())
@@ -91,6 +91,12 @@
 			// Pick left/right child of the entry as target
 			var isLeft = key < targetEntryKey;
 			var iTargetNode = isLeft ? iTargetEntry : iTargetEntry + 1;
+
+			// TODO: Temporary fix while deletion does not rebalance the tree.
+			if (iTargetNode >= node.children.Count)
+			{
+				iTargetNode--;
+			}
 
 			return node.children[iTargetNode];
 		}
@@ -200,22 +206,32 @@
 			return node.EntryCount > Order - 1;
 		}
 
-		// TODO: replace dummy implementation
 		public void Delete(int key)
 		{
-			if (root == null)
+			var found = FindWithNode(key);
+			if (found == null || !found.HasValue)
 			{
 				return;
 			}
 
-			foreach (Node node in Traverse())
+			var node = found.Value.Node;
+			if (node.IsLeaf() || node.EntryCount == 1)
 			{
-				var found = node.Find(key);
-				if (found != null)
+				if (node == root)
 				{
-					node.Remove(key);
+					root = null;
 					return;
 				}
+
+				node.parent.RemoveChild(node);
+				foreach (var child in node.children)
+				{
+					child.parent = node.parent;
+				}
+			}
+			else
+			{
+				node.Remove(key);
 			}
 		}
 

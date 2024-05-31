@@ -14,10 +14,11 @@ namespace BTrees.Test
 			Assert.AreEqual(BTree.DEFAULT_ORDER, btree.Order);
 		}
 
-		[TestMethod]
-		public void TestCreateTreeWithOrder()
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultOrders), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+
+		public void TestCreateTreeWithOrder(int order)
 		{
-			var order = 5;
 			var btree = new BTree(order);
 
 			Assert.AreEqual(order, btree.Order);
@@ -180,10 +181,8 @@ namespace BTrees.Test
 		 *
 		 */
 		[DataTestMethod]
-		[DataRow(3)]
-		[DataRow(4)]
-		[DataRow(5)]
-		[DataRow(10)]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultOrders), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+
 		public void TestRootShouldSplitWhenExceedingEntryLimit(int order)
 		{
 			var entries = TestDataHelpers.GetAscendingTestData(order);
@@ -238,6 +237,18 @@ namespace BTrees.Test
 			}
 		}
 
-		// TODO: add tests that cause the dummy delete operation to fail
+		[DataTestMethod]
+		[DynamicData(nameof(TestDataHelpers.GetDefaultTestDataSets), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
+		public void TestTreeIsEmptyIfAllEntriesAreRemoved(IEnumerable<(int Key, int Value)> entries)
+		{
+			var btree = TestDataHelpers.CreateTreeWithData(entries);
+
+			foreach (var (key, _) in entries)
+			{
+				btree.Delete(key);
+			}
+
+			Assert.IsTrue(btree.IsEmpty);
+		}
 	}
 }
