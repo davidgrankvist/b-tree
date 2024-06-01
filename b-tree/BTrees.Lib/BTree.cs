@@ -35,7 +35,7 @@
 					return (current, found.Value);
 				}
 
-				if (current.IsLeaf())
+				if (current.IsLeaf)
 				{
 					break;
 				}
@@ -63,7 +63,7 @@
 		private void BottomUpInsert(int key, int val, Node node)
 		{
 			// Phase 1 - Find a leaf to insert the entry into
-			if (node.IsLeaf())
+			if (node.IsLeaf)
 			{
 				node.Insert(key, val);
 
@@ -215,7 +215,7 @@
 			}
 
 			var node = found.Value.Node;
-			if (node.IsLeaf() || node.EntryCount == 1)
+			if (node.IsLeaf || node.EntryCount == 1)
 			{
 				if (node == root)
 				{

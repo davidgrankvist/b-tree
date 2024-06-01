@@ -12,6 +12,7 @@
 
 		public int Count { get => children.Count; }
 		public int EntryCount { get => entries.Count; }
+		public bool IsLeaf { get => Count == 0; }
 
 		public Node()
 		{
@@ -53,11 +54,6 @@
 			{
 				entries.RemoveAt(iRemove);
 			}
-		}
-
-		public bool IsLeaf()
-		{
-			return Count == 0;
 		}
 
 		public void InsertChild(Node node)
