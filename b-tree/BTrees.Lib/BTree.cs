@@ -235,6 +235,105 @@
 			}
 		}
 
+		// TODO: replace delete with this when it works
+		public void BalancedDelete(int key)
+		{
+			var found = FindWithNode(key);
+			if (found == null || !found.HasValue)
+			{
+				return;
+			}
+
+			var node = found.Value.Node;
+			var iKey = node.entries.FindIndex(x => x.Key == key);
+			node.Remove(key);
+
+			if (node.IsLeaf)
+			{
+				if (IsUnderflown(node))
+				{
+					Rebalance(node);
+				}
+			}
+			else
+			{
+				var leaf = PromoteLeaf(node, iKey);
+				if (IsUnderflown(leaf))
+				{
+					Rebalance(leaf);
+				}
+			}
+		}
+
+		private static Node PromoteLeaf(Node node, int iKey)
+		{
+			var leftSubtree = node.children[iKey];
+			var rightSubtree = node.children[iKey + 1];
+
+			var leftLeaf = FindRightmostLeaf(leftSubtree);
+			var rightLeaf = FindLeftmostLeaf(rightSubtree);
+
+			if (leftLeaf.EntryCount > rightLeaf.EntryCount)
+			{
+				var max = leftLeaf.entries.Last();
+				leftLeaf.Remove(max.Key);
+				node.Insert(max.Key, max.Value);
+
+				return leftLeaf;
+			}
+			else
+			{
+				var min = rightLeaf.entries.First();
+				rightLeaf.Remove(min.Key);
+				node.Insert(min.Key, min.Value);
+
+				return rightLeaf;
+			}
+		}
+
+		private static Node FindRightmostLeaf(Node node)
+		{
+			var current = node;
+			while (!current.IsLeaf)
+			{
+				current = current.children.Last();
+			}
+			return current;
+		}
+
+		private static Node FindLeftmostLeaf(Node node)
+		{
+			var current = node;
+			while (!current.IsLeaf)
+			{
+				current = current.children.First();
+			}
+			return current;
+		}
+
+		private bool IsUnderflown(Node node)
+		{
+			if (node.IsLeaf)
+			{
+				return node.EntryCount < Math.Ceiling(Order / 2d) - 1;
+			}
+			else if (node == root)
+			{
+				return node.EntryCount == 0;
+			}
+			else
+			{
+				return node.EntryCount < Math.Ceiling(Order / 2d);
+			}
+		}
+
+		private void Rebalance(Node node)
+		{
+			// rotate or merge
+			// if merge unbalanced the parent, rebalance it recursively
+			throw new NotImplementedException();
+		}
+
 		public IBTreeNode GetRoot()
 		{
 			if (root == null)
