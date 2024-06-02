@@ -396,6 +396,15 @@
 				return false;
 			}
 
+			// TODO: The way the subtree is moved below seems wrong.
+			//
+			// If we rotate and add a new child then we violate the property
+			// that a node with k children should have k - 1 keys.
+			//
+			// Before deletion we have ceil(m/2) - 1 keys and ceil(m/2) children.
+			// Then we replace the key with a rotated value and add a child, resulting in
+			// ceil(m/2) - 1 keys and ceil(m/2) + 1 children.
+
 			// Rotate a key from the sibling which has the most keys
 			if (leftSibling.EntryCount > rightSibling.EntryCount)
 			{
