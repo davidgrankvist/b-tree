@@ -250,9 +250,13 @@
 
 			if (node.IsLeaf)
 			{
-				if (IsUnderflown(node))
+				if (node == root && node.Count == 0)
 				{
-					Rebalance(node);
+					root = null;
+				}
+				else if (IsUnderflown(node))
+				{
+					Rebalance(node, iKey);
 				}
 			}
 			else
@@ -260,7 +264,7 @@
 				var leaf = PromoteLeaf(node, iKey);
 				if (IsUnderflown(leaf))
 				{
-					Rebalance(leaf);
+					Rebalance(leaf, iKey);
 				}
 			}
 		}
@@ -313,24 +317,150 @@
 
 		private bool IsUnderflown(Node node)
 		{
+			return node.EntryCount < GetMinimumNumberOfKeys(node);
+		}
+
+		private int GetMinimumNumberOfKeys(Node node)
+		{
 			if (node.IsLeaf)
 			{
-				return node.EntryCount < Math.Ceiling(Order / 2d) - 1;
-			}
-			else if (node == root)
-			{
-				return node.EntryCount == 0;
+				if (node == root)
+				{
+					return 1;
+				}
+				else
+				{
+					// minimum number of keys is ceil(m/2) - 1
+					return Order / 2 + (Order % 2) - 1;
+				}
 			}
 			else
 			{
-				return node.EntryCount < Math.Ceiling(Order / 2d);
+				return node.Count - 1;
 			}
 		}
 
-		private void Rebalance(Node node)
+		private void Rebalance(Node node, int iKey)
 		{
-			// rotate or merge
-			// if merge unbalanced the parent, rebalance it recursively
+			// The root has no siblings or parent, so we can't rotate/merge.
+			// Promote a leaf instead and rebalance it if needed.
+			if (node == root)
+			{
+				var leaf = PromoteLeaf(node, iKey);
+				if (IsUnderflown(leaf))
+				{
+					Rebalance(leaf, iKey);
+				}
+				return;
+			}
+
+			// otherwise rotate/merge
+			var didRotate = TryRotate(node);
+			if (!didRotate)
+			{
+				var iRemovedParentKey = Merge(node);
+				if (IsUnderflown(node.parent))
+				{
+					// TODO: check which second argument makes sense here
+					// remember that children are merged and indices may change
+					Rebalance(node.parent, iRemovedParentKey);
+				}
+			}
+		}
+
+		private bool TryRotate(Node node)
+		{
+			// Rotate largest key in left sibling or smallest key in right sibling.
+			// Take from the one with the most keys.
+			//
+			// Also rotate children. If left is rotated, bring the largest subtree.
+			// If right is rotated, bring the smallest subtree
+
+			var leftSibling = new Node(); // dummy sibling values
+			var rightSibling = new Node();
+			var parent = node.parent;
+
+			var iNode = parent.children.FindIndex(x => x == node);
+			if (iNode > 0)
+			{
+				leftSibling = parent.children[iNode - 1];
+			}
+			if (iNode < parent.children.Count - 1)
+			{
+				rightSibling = parent.children[iNode + 1];
+			}
+
+			// Check that we are able to rotate at all
+			if (leftSibling.EntryCount <= GetMinimumNumberOfKeys(leftSibling) && rightSibling.EntryCount <= GetMinimumNumberOfKeys(rightSibling))
+			{
+				return false;
+			}
+
+			// Rotate a key from the sibling which has the most keys
+			if (leftSibling.EntryCount > rightSibling.EntryCount)
+			{
+				/* Rotate max entry from left sibling
+				 *
+				 *     2              1
+				 *    / \            / \
+				 *  0,1 target  ->  0   2
+				 *     \               /
+				 *     subtree       subtree
+				 */
+				var iParentKey = iNode - 1;
+				var iLeftMax = leftSibling.EntryCount - 1;
+				var leftMax = leftSibling.entries.Last();
+
+				// rotate entry
+				var parentEntry = parent.entries[iParentKey];
+				parent.entries[iParentKey] = leftMax;
+				leftSibling.Remove(leftMax.Key);
+				node.Insert(parentEntry.Key, parentEntry.Value);
+
+				if (!node.IsLeaf)
+				{
+					// move subtree
+					var leftSiblingMaxChild = leftSibling.children[iLeftMax + 1];
+					leftSibling.RemoveChild(leftSiblingMaxChild);
+					node.InsertChild(leftSiblingMaxChild);
+					leftSiblingMaxChild.parent = node;
+				}
+			}
+			else
+			{
+				/* Rotate min entry from right sibling
+				 *
+				 *       2            3
+				 *      / \          / \
+				 * target  3,4  ->  2   4
+				 *        /          \
+				 *     subtree       subtree
+				 */
+				var iParentKey = iNode;
+				var iRightMin = 0;
+				var rightMin = rightSibling.entries.First();
+
+				// rotate entry
+				var parentEntry = parent.entries[iParentKey];
+				parent.entries[iParentKey] = rightMin;
+				rightSibling.Remove(rightMin.Key);
+				node.Insert(parentEntry.Key, parentEntry.Value);
+
+				if (!node.IsLeaf)
+				{
+					// move subtree
+					var rightSiblingMinChild = leftSibling.children[iRightMin];
+					rightSibling.RemoveChild(rightSiblingMinChild);
+					node.InsertChild(rightSiblingMinChild);
+					rightSiblingMinChild.parent = node;
+				}
+			}
+
+			return true;
+		}
+
+		private int Merge(Node node)
+		{
 			throw new NotImplementedException();
 		}
 
