@@ -31,3 +31,5 @@ The purpose of this project is to understand B-trees better by implementing one.
 ## Resources
 
 Check out [this excellent visualization](https://www.cs.usfca.edu/~galles/visualization/BTree.html) by David Galles. You can find more of them for other algorithms [here](https://www.cs.usfca.edu/~galles/visualization/Algorithms.html).
+
+For whiteboard explanations, have a look at Jenny's Lectures CS IT on YouTube (see [insertion](https://www.youtube.com/watch?v=aNU9XYYCHu8) and [deletion](https://www.youtube.com/watch?v=GKa_t7fF8o0)).
