@@ -257,11 +257,11 @@ namespace BTrees.Test
 		 *
 		 * Example:
 		 *
-		 * Tree of order 3. Insert 1,2,3 and remove 3.
+		 * Tree of order 3. Insert 1,2,3 and remove 1.
 		 *
-		 *   1
-		 *  / \   ->  1,2
-		 * 2   3
+		 *   2
+		 *  / \   ->  2,3
+		 * 1   3
 		 */
 		[DataTestMethod]
 		[DynamicData(nameof(TestDataHelpers.GetDefaultOrders), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
