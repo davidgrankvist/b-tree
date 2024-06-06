@@ -281,5 +281,53 @@ namespace BTrees.Test
 
 			Assert.IsTrue(rootIsLeaf);
 		}
+
+		/*
+		 * Let the order m be an even number. If we insert m elements we first get a split. If we then delete
+		 * one entry from the leaf with fewer entries, that should rotate from the other leaf.
+		 *
+		 * Since m is even, one of the children has more than the minimum number of keys.
+		 * Which one depends on whether the tree has a right or left bias when splitting
+		 * in the insertion phase.
+		 *
+		 * Example:
+		 *
+		 * Tree of order 4. Insert 1,2,3,4 and remove 1.
+		 *
+		 *   2            3
+		 *  / \     ->   / \
+		 * 1   3,4      2   4
+		 */
+		[DataTestMethod]
+		[DataRow(4)]
+		[DataRow(6)]
+		[DataRow(10)]
+		public void TestShouldRotateAfterDeleteIfEvenOrder(int order)
+		{
+			var entries = TestDataHelpers.GetAscendingTestData(order);
+			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
+
+			var root = btree.GetRoot();
+			var children = root.Children.ToList();
+			var left = children[0];
+			var right = children[1];
+
+			// The tree has a left bias, so if we delete an entry in the right leaf
+			// then we expect a rotation from left to right.
+			var prevLeftLastKey = left.Entries.Last().Key;
+			var prevLeftSecondLastKey = left.Entries.ToList()[left.Entries.Count() - 2].Key;
+			var prevRightFirstKey = right.Entries.First().Key;
+			var prevRootKey = root.Entries.First().Key;
+
+			btree.Delete(prevRightFirstKey);
+
+			var newLeftLastKey = left.Entries.Last().Key;
+			var newRightFirstKey = right.Entries.First().Key;
+			var newRootKey = root.Entries.First().Key;
+
+			Assert.AreEqual(prevLeftLastKey, newRootKey);
+			Assert.AreEqual(prevRootKey, newRightFirstKey);
+			Assert.AreEqual(prevLeftSecondLastKey, newLeftLastKey);
+		}
 	}
 }
