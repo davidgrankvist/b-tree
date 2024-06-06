@@ -252,8 +252,10 @@ namespace BTrees.Test
 		}
 
 		/*
-		 * If the order is m and we insert m elements we first get a split. If we then delete
+		 * Let the order m be an odd number. If we insert m elements we first get a split. If we then delete
 		 * one entry, that should undo the split.
+		 *
+		 * Since m is odd, each child will have exactly the minimum number of keys and we can't rotate.
 		 *
 		 * Example:
 		 *
@@ -264,8 +266,10 @@ namespace BTrees.Test
 		 * 1   3
 		 */
 		[DataTestMethod]
-		[DynamicData(nameof(TestDataHelpers.GetDefaultOrders), typeof(TestDataHelpers), DynamicDataSourceType.Method)]
-		public void TestRootShouldMergeAfterDelete(int order)
+		[DataRow(3)]
+		[DataRow(5)]
+		[DataRow(9)]
+		public void TestRootShouldMergeAfterDeleteIfOddOrder(int order)
 		{
 			var entries = TestDataHelpers.GetAscendingTestData(order);
 			var btree = TestDataHelpers.CreateTreeWithData(entries, order);
