@@ -387,15 +387,6 @@
 				return false;
 			}
 
-			// TODO: The way the subtree is moved below seems wrong.
-			//
-			// If we rotate and add a new child then we violate the property
-			// that a node with k children should have k - 1 keys.
-			//
-			// Before deletion we have ceil(m/2) - 1 keys and ceil(m/2) children.
-			// Then we replace the key with a rotated value and add a child, resulting in
-			// ceil(m/2) - 1 keys and ceil(m/2) + 1 children.
-
 			// Rotate a key from the sibling which has the most keys
 			if (leftSibling.EntryCount > rightSibling.EntryCount)
 			{
@@ -455,6 +446,21 @@
 					rightSiblingMinChild.parent = node;
 				}
 			}
+
+			/* NOTE: When we rotate, we need to make sure that each node
+			 * with k children has k - 1 keys.
+			 *
+			 * This works out because of the order of operations. A rotation happens as a result of previous merging.
+			 *
+			 * The rebalancing starts in a leaf. If a merge happens, then the parent of the leaf may underflow.
+			 * At that point, the parent has one key less and one child less than it originally had.
+			 *
+			 * Later when we perform the rotation, that parent receives one more key and one more child,
+			 * which maintains its balance between number of children and keys.
+			 *
+			 * The sibling we borrowed from now has one less key and one less child,
+			 * which maintains its balance as well.
+			 */
 
 			return true;
 		}
