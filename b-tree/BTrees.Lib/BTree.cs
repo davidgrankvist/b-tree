@@ -322,22 +322,13 @@
 
 		private int GetMinimumNumberOfKeys(Node node)
 		{
-			if (node.IsLeaf)
+			if (node.IsLeaf && node == root)
 			{
-				if (node == root)
-				{
-					return 1;
-				}
-				else
-				{
-					// minimum number of keys is ceil(m/2) - 1
-					return Order / 2 + (Order % 2) - 1;
-				}
+				return 1;
 			}
-			else
-			{
-				return node.Count - 1;
-			}
+
+			// minimum number of keys is ceil(m/2) - 1
+			return Order / 2 + (Order % 2) - 1;
 		}
 
 		private void Rebalance(Node node, int iKey)
