@@ -428,7 +428,7 @@
 				if (!node.IsLeaf)
 				{
 					// move subtree
-					var rightSiblingMinChild = leftSibling.children[iRightMin];
+					var rightSiblingMinChild = rightSibling.children[iRightMin];
 					rightSibling.RemoveChild(rightSiblingMinChild);
 					node.InsertChild(rightSiblingMinChild);
 					rightSiblingMinChild.parent = node;
