@@ -238,6 +238,7 @@
 		// TODO: replace delete with this when it works
 		public void BalancedDelete(int key)
 		{
+			// Phase 1 - Find the key and delete it
 			var found = FindWithNode(key);
 			if (found == null || !found.HasValue)
 			{
@@ -245,9 +246,16 @@
 			}
 
 			var node = found.Value.Node;
+			// we may need the index later to find the leaf entry to promote
 			var iKey = node.entries.FindIndex(x => x.Key == key);
 			node.Remove(key);
 
+			/*
+			 * Phase 2 - Pick a leaf to rebalance
+			 *
+			 * If the node is a leaf, rebalance that leaf if needed.
+			 * For non-leaf nodes, promote a leaf entry and rebalance that leaf.
+			 */
 			if (node.IsLeaf)
 			{
 				if (node == root && node.Count == 0)
@@ -256,7 +264,7 @@
 				}
 				else if (IsUnderflown(node))
 				{
-					Rebalance(node, iKey);
+					Rebalance(node);
 				}
 			}
 			else
@@ -264,7 +272,7 @@
 				var leaf = PromoteLeaf(node, iKey);
 				if (IsUnderflown(leaf))
 				{
-					Rebalance(leaf, iKey);
+					Rebalance(leaf);
 				}
 			}
 		}
@@ -331,30 +339,40 @@
 			return Order / 2 + (Order % 2) - 1;
 		}
 
-		private void Rebalance(Node node, int iKey)
+		private void Rebalance(Node node)
 		{
-			// The root has no siblings or parent, so we can't rotate/merge.
-			// Promote a leaf instead and rebalance it if needed.
-			if (node == root)
-			{
-				var leaf = PromoteLeaf(node, iKey);
-				if (IsUnderflown(leaf))
-				{
-					Rebalance(leaf, iKey);
-				}
-				return;
-			}
+			/*
+			 * Phase 3 - Rebalance with rotation and merging
+			 *
+			 * After a leaf entry has been removed or promoted, we rebalance the tree with a series
+			 * of rotation and merge operations up the tree.
+			 */
 
-			// otherwise rotate/merge
-			var didRotate = TryRotate(node);
+            if (node == root)
+            {
+				/*
+				 * The root will underflow if it becomes empty after a merge, but in that case the merge
+				 * operation should promote the merged child to be the new root. Therefore we shouldn't
+				 * call Rebalance on an empty root.
+				 */
+				throw new InvalidOperationException($"Unexpected {nameof(Rebalance)} call on the root node");
+            }
+
+            var didRotate = TryRotate(node);
 			if (!didRotate)
 			{
-				var iRemovedParentKey = Merge(node);
+				Merge(node);
+
+				// A merge may have caused the node to become the new root, in which cause we are done.
+				if (node == root)
+				{
+					return;
+				}
+
+				// Otherwise, check if the parent needs rebalancing.
 				if (IsUnderflown(node.parent))
 				{
-					// TODO: check which second argument makes sense here
-					// remember that children are merged and indices may change
-					Rebalance(node.parent, iRemovedParentKey);
+					Rebalance(node.parent);
 				}
 			}
 		}
@@ -465,9 +483,49 @@
 			return true;
 		}
 
-		private int Merge(Node node)
+		private void Merge(Node node)
 		{
-			throw new NotImplementedException();
+			/*
+			 * Example:
+			 *
+			 *	Order = 5
+			 *	Min num keys = ceil(5/2) - 1 = 2
+			 *
+			 * 4 is deleted, so 3 underflows. We can't rotate since both siblings have 2 keys. We can merge with either one.
+			 * Let's pick the left one and merge 0,1 with 3. We bring down 2 from the parent in the process.
+			 *
+			 *        2,5                 2,5                   5
+			 *      /  |  \     ->      /  |  \      ->       /   \
+			 *   0,1  3,4  6,7       0,1   3   6,7        0,1,2,3  6,7
+			 *
+			 */
+
+			// Find sibling and parent entry
+			var parent = node.parent;
+			var iNode = parent.children.FindIndex(x => x == node);
+			var iSibling = iNode > 0 ? iNode - 1 : iNode + 1;
+			var iParentEntry = iNode < iSibling ? iNode : iNode - 1;
+
+			var sibling = parent.children[iSibling];
+			var parentEntry = parent.entries[iParentEntry];
+
+			// Merge into the underflown node
+			foreach (var entry in sibling.entries)
+			{
+				node.Insert(entry.Key, entry.Value);
+			}
+			node.Insert(parentEntry.Key, parentEntry.Value);
+
+			// Remove sibling and parent entry
+			parent.RemoveChild(sibling);
+			parent.Remove(parentEntry.Key);
+
+			// If the merge caused the root to be empty, then the merged node
+			// becomes the new root
+			if (parent == root && parent.EntryCount == 0)
+			{
+				root = node;
+			}
 		}
 
 		public IBTreeNode GetRoot()
