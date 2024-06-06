@@ -208,36 +208,6 @@
 
 		public void Delete(int key)
 		{
-			var found = FindWithNode(key);
-			if (found == null || !found.HasValue)
-			{
-				return;
-			}
-
-			var node = found.Value.Node;
-			if (node.IsLeaf || node.EntryCount == 1)
-			{
-				if (node == root)
-				{
-					root = null;
-					return;
-				}
-
-				node.parent.RemoveChild(node);
-				foreach (var child in node.children)
-				{
-					child.parent = node.parent;
-				}
-			}
-			else
-			{
-				node.Remove(key);
-			}
-		}
-
-		// TODO: replace delete with this when it works
-		public void BalancedDelete(int key)
-		{
 			// Phase 1 - Find the key and delete it
 			var found = FindWithNode(key);
 			if (found == null || !found.HasValue)
