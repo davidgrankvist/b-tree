@@ -495,6 +495,7 @@
 			if (parent == root && parent.EntryCount == 0)
 			{
 				root = node;
+				node.parent = null;
 			}
 		}
 
