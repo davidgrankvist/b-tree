@@ -2,14 +2,11 @@
 
 [B-tree](https://en.wikipedia.org/wiki/B-tree) implementation.
 
-Progress:
-- [x] Insert
-- [x] Find
-- [ ] Delete
-
 ## About
 
-The purpose of this project is to understand B-trees better by implementing one.
+A B-tree is essentially a data structure that allows you to search for things quickly. It's similar to a binary search tree, but in a more general form.
+
+The purpose of this project is to understand B-trees better by implementing one. It supports basic insert, find and delete operations. There's also a small command line application that allows you to interactively insert and delete entries and print the result.
 
 ### Code overview
 
