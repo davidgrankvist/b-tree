@@ -92,12 +92,6 @@
 			var isLeft = key < targetEntryKey;
 			var iTargetNode = isLeft ? iTargetEntry : iTargetEntry + 1;
 
-			// TODO: Temporary fix while deletion does not rebalance the tree.
-			if (iTargetNode >= node.children.Count)
-			{
-				iTargetNode--;
-			}
-
 			return node.children[iTargetNode];
 		}
 
