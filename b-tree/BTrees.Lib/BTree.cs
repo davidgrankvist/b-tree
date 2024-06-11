@@ -490,6 +490,13 @@
 			parent.RemoveChild(sibling);
 			parent.Remove(parentEntry.Key);
 
+			// Move the sibling's children to the node we merged with
+			foreach (var child in sibling.children)
+			{
+				node.InsertChild(child);
+				child.parent = node;
+			}
+
 			// If the merge caused the root to be empty, then the merged node
 			// becomes the new root
 			if (parent == root && parent.EntryCount == 0)
